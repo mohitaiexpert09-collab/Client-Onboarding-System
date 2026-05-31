@@ -6,10 +6,10 @@ import { Card, Badge, Button, Input, Label, Textarea, Select } from "@/component
 import { StageSelect } from "@/components/clients/stage-select";
 import { CopyLink } from "@/components/clients/copy-link";
 import { AiPanel } from "@/components/clients/ai-panel";
+import { ProjectPipeline, type PipelineResource } from "@/components/project/pipeline";
 import { publicEnv, isAIConfigured } from "@/lib/env";
 import {
   STAGE_LABEL,
-  stageProgress,
   formatMoney,
   type Client,
   type Contract,
@@ -74,8 +74,17 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
   ]);
 
   const project = (projects?.[0] ?? null) as Project | null;
+  const kickoff0 = (kickoffs?.[0] ?? null) as Kickoff | null;
   const portalUrl = `${publicEnv.appUrl}/portal/${client.portal_token}`;
   const cid = <input type="hidden" name="client_id" value={client.id} />;
+
+  // Signed URLs for client files → pipeline resources.
+  const resources: PipelineResource[] = await Promise.all(
+    ((files as ClientFile[] | null) ?? []).map(async (f) => {
+      const { data } = await supabase.storage.from("client-files").createSignedUrl(f.path, 3600);
+      return { name: f.name, kind: f.kind, url: data?.signedUrl ?? null };
+    })
+  );
 
   return (
     <div>
@@ -95,16 +104,20 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
       <div className="grid gap-6 p-8 lg:grid-cols-3">
         {/* Left column */}
         <div className="space-y-6 lg:col-span-2">
-          {/* Progress */}
-          <Card>
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">Lifecycle progress</h2>
-              <span className="text-sm text-zinc-500">{stageProgress(client.stage)}%</span>
-            </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
-              <div className="h-full bg-indigo-600" style={{ width: `${stageProgress(client.stage)}%` }} />
-            </div>
-          </Card>
+          {/* Project pipeline */}
+          <ProjectPipeline
+            stage={client.stage}
+            timelineDays={client.timeline_days}
+            startDate={kickoff0?.scheduled_at ?? client.created_at}
+            scope={null}
+            deliverables={null}
+            valueCents={client.value_cents}
+            paymentStructure={client.payment_structure}
+            milestones={(milestones as Milestone[] | null) ?? []}
+            resources={resources}
+            slackUrl={project?.slack_url}
+            whatsappUrl={project?.whatsapp_url}
+          />
 
           {/* Engagement */}
           <Card>

@@ -4,7 +4,6 @@ import { isSupabaseConfigured } from "@/lib/env";
 import { Card, Button, Input, Label, Badge } from "@/components/ui";
 import {
   formatMoney,
-  stageProgress,
   type Client,
   type Organization,
   type Contract,
@@ -25,6 +24,7 @@ import {
   bookKickoffAction,
 } from "./actions";
 import { Markdown } from "@/components/documents/markdown";
+import { ProjectPipeline, type PipelineResource } from "@/components/project/pipeline";
 
 const DEFAULT_INTAKE: FormField[] = [
   { key: "goals", label: "What are your main goals for this engagement?", type: "textarea", required: true },
@@ -59,6 +59,7 @@ export default async function PortalPage({
     { data: milestones },
     { data: reports },
     { data: projects },
+    { data: files },
   ] = await Promise.all([
     admin.from("organizations").select("*").eq("id", client.org_id).single(),
     admin.from("contracts").select("*").eq("client_id", client.id).in("status", ["sent", "viewed", "signed"]).order("created_at", { ascending: false }),
@@ -69,6 +70,7 @@ export default async function PortalPage({
     admin.from("milestones").select("*").eq("client_id", client.id).order("created_at"),
     admin.from("weekly_reports").select("*").eq("client_id", client.id).order("created_at", { ascending: false }),
     admin.from("projects").select("*").eq("client_id", client.id).limit(1),
+    admin.from("files").select("id,name,kind,path").eq("client_id", client.id).order("created_at", { ascending: false }),
   ]);
 
   const org = orgData as Organization;
@@ -79,6 +81,15 @@ export default async function PortalPage({
   const intakeFields: FormField[] = intakeForm?.schema?.length ? intakeForm.schema : DEFAULT_INTAKE;
   const hasResponded = ((responses as FormResponse[] | null)?.length ?? 0) > 0;
   const kickoff = (kickoffs as Kickoff[] | null)?.[0] ?? null;
+
+  // Signed URLs for the client's uploaded resources.
+  const fileRows = (files as { id: string; name: string; kind: string | null; path: string }[] | null) ?? [];
+  const resources: PipelineResource[] = await Promise.all(
+    fileRows.map(async (f) => {
+      const { data } = await admin.storage.from("client-files").createSignedUrl(f.path, 3600);
+      return { name: f.name, kind: f.kind, url: data?.signedUrl ?? null };
+    })
+  );
 
   const banner =
     sp.paid ? "Payment received — thank you!"
@@ -228,7 +239,7 @@ export default async function PortalPage({
           const rs = (reports as WeeklyReport[] | null) ?? [];
           const project = (projects?.[0] as Project | undefined) ?? null;
           const hasWorkspace =
-            ms.length > 0 || rs.length > 0 || !!project?.slack_url || !!project?.whatsapp_url || !!client.scope;
+            ms.length > 0 || rs.length > 0 || resources.length > 0 || !!project?.slack_url || !!project?.whatsapp_url || !!client.scope;
           if (!hasWorkspace) return null;
 
           return (
@@ -238,44 +249,19 @@ export default async function PortalPage({
                 <p className="text-sm text-zinc-500">Track progress and updates in one place.</p>
               </div>
 
-              <Card>
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Progress</span>
-                  <span className="text-sm text-zinc-500">{stageProgress(client.stage)}%</span>
-                </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
-                  <div className="h-full bg-indigo-600" style={{ width: `${stageProgress(client.stage)}%` }} />
-                </div>
-                {(client.scope || client.deliverables || client.timeline_days) && (
-                  <dl className="mt-4 space-y-1 text-sm">
-                    {client.scope && <div><dt className="text-zinc-500">Scope</dt><dd className="text-zinc-800 dark:text-zinc-200">{client.scope}</dd></div>}
-                    {client.deliverables && <div><dt className="text-zinc-500">Deliverables</dt><dd className="text-zinc-800 dark:text-zinc-200">{client.deliverables}</dd></div>}
-                    {client.timeline_days && <div><dt className="text-zinc-500">Timeline</dt><dd className="text-zinc-800 dark:text-zinc-200">{client.timeline_days} days</dd></div>}
-                  </dl>
-                )}
-                {(project?.slack_url || project?.whatsapp_url) && (
-                  <div className="mt-4 flex gap-2">
-                    {project.slack_url && <a href={project.slack_url} className="text-sm font-medium text-indigo-600 hover:underline">Slack channel →</a>}
-                    {project.whatsapp_url && <a href={project.whatsapp_url} className="text-sm font-medium text-indigo-600 hover:underline">WhatsApp group →</a>}
-                  </div>
-                )}
-              </Card>
-
-              {ms.length > 0 && (
-                <Card>
-                  <h3 className="mb-3 font-semibold text-zinc-900 dark:text-zinc-100">Milestones</h3>
-                  <ul className="space-y-2">
-                    {ms.map((m) => (
-                      <li key={m.id} className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-800 dark:text-zinc-200">{m.title}</span>
-                        <Badge color={m.status === "done" ? "green" : m.status === "in_progress" ? "amber" : "zinc"}>
-                          {m.status === "in_progress" ? "in progress" : m.status}
-                        </Badge>
-                      </li>
-                    ))}
-                  </ul>
-                </Card>
-              )}
+              <ProjectPipeline
+                stage={client.stage}
+                timelineDays={client.timeline_days}
+                startDate={kickoff?.scheduled_at ?? client.created_at}
+                scope={client.scope}
+                deliverables={client.deliverables}
+                valueCents={client.value_cents}
+                paymentStructure={client.payment_structure}
+                milestones={ms}
+                resources={resources}
+                slackUrl={project?.slack_url}
+                whatsappUrl={project?.whatsapp_url}
+              />
 
               {rs.length > 0 && (
                 <Card>
