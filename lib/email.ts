@@ -14,15 +14,25 @@ export async function sendEmail(params: {
     console.log(`[email:skipped] to=${params.to} subject="${params.subject}"`);
     return false;
   }
-  const { getResend } = await import("@/lib/integrations/resend");
   const from = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-  await getResend().emails.send({
-    from,
-    to: params.to,
-    subject: params.subject,
-    html: params.html,
-  });
-  return true;
+  try {
+    const { getResend } = await import("@/lib/integrations/resend");
+    const { error } = await getResend().emails.send({
+      from,
+      to: params.to,
+      subject: params.subject,
+      html: params.html,
+    });
+    if (error) {
+      // e.g. free-tier "can only send to your own address" — don't break flows.
+      console.warn(`[email:failed] to=${params.to} subject="${params.subject}" — ${error.message}`);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn(`[email:error] to=${params.to} subject="${params.subject}" —`, err);
+    return false;
+  }
 }
 
 /** Premium branded HTML email wrapper (table-based for email-client robustness). */
