@@ -1,0 +1,93 @@
+import { requireContext } from "@/lib/auth";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { Card, Badge, Button, Input, Label, Textarea } from "@/components/ui";
+import { CopyLink } from "@/components/clients/copy-link";
+import { isStripeConfigured, isResendConfigured, isAIConfigured, publicEnv } from "@/lib/env";
+import { updateOrgAction, updateLeadSettingsAction } from "./actions";
+
+function statusBadge(ok: boolean) {
+  return ok ? <Badge color="green">Connected</Badge> : <Badge color="zinc">Not configured</Badge>;
+}
+
+export default async function SettingsPage() {
+  const ctx = await requireContext();
+  const esignConfigured = !!process.env.DROPBOX_SIGN_API_KEY;
+
+  const integrations = [
+    { name: "Stripe (payments)", ok: isStripeConfigured(), hint: "Add STRIPE_SECRET_KEY to .env.local" },
+    { name: "Resend (email)", ok: isResendConfigured(), hint: "Add RESEND_API_KEY to .env.local" },
+    { name: "Dropbox Sign (e-signature)", ok: esignConfigured, hint: "Optional — built-in click-to-sign works without it" },
+    { name: "OpenAI (AI assists)", ok: isAIConfigured(), hint: "Add OPENAI_API_KEY for AI contract drafts, intake summaries & weekly updates" },
+  ];
+
+  return (
+    <div>
+      <PageHeader title="Settings" subtitle="Workspace and integrations" />
+      <div className="grid gap-6 p-8 lg:grid-cols-2">
+        <Card>
+          <h2 className="mb-4 font-semibold text-zinc-900 dark:text-zinc-100">Workspace</h2>
+          <form action={updateOrgAction} className="space-y-3">
+            <div>
+              <Label htmlFor="name">Workspace name</Label>
+              <Input id="name" name="name" defaultValue={ctx.org.name} />
+            </div>
+            <div>
+              <Label htmlFor="brand_color">Brand color</Label>
+              <Input id="brand_color" name="brand_color" type="color" defaultValue={ctx.org.brand_color ?? "#4f46e5"} className="h-10 w-20 p-1" />
+            </div>
+            <Button type="submit">Save</Button>
+          </form>
+        </Card>
+
+        <Card>
+          <h2 className="mb-4 font-semibold text-zinc-900 dark:text-zinc-100">Integrations</h2>
+          <ul className="space-y-3">
+            {integrations.map((i) => (
+              <li key={i.name} className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{i.name}</p>
+                  {!i.ok && <p className="text-xs text-zinc-500">{i.hint}</p>}
+                </div>
+                {statusBadge(i.ok)}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-xs text-zinc-500">
+            All integrations are optional for testing — payments fall back to manual confirmation, emails log to
+            the server console, and contracts use built-in click-to-sign until you add keys.
+          </p>
+        </Card>
+
+        {/* Lead capture */}
+        <Card className="lg:col-span-2">
+          <h2 className="mb-1 font-semibold text-zinc-900 dark:text-zinc-100">Lead capture</h2>
+          <p className="mb-4 text-sm text-zinc-500">
+            Share this public link in your ads, website, or link-in-bio. Submissions automatically create a client
+            and start the lifecycle.
+          </p>
+          {ctx.org.slug && (
+            <div className="mb-4">
+              <Label>Your public lead form</Label>
+              <CopyLink url={`${publicEnv.appUrl}/apply/${ctx.org.slug}`} />
+            </div>
+          )}
+          <form action={updateLeadSettingsAction} className="space-y-3">
+            <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+              <input type="checkbox" name="lead_form_enabled" defaultChecked={ctx.org.lead_form_enabled !== false} className="h-4 w-4" />
+              Lead form enabled
+            </label>
+            <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+              <input type="checkbox" name="lead_auto_proposal" defaultChecked={!!ctx.org.lead_auto_proposal} className="h-4 w-4" />
+              Auto-generate &amp; email a proposal when a lead submits (requires OpenAI)
+            </label>
+            <div>
+              <Label htmlFor="lead_intro">Intro text (shown on the form)</Label>
+              <Textarea id="lead_intro" name="lead_intro" rows={2} defaultValue={ctx.org.lead_intro ?? ""} placeholder="Tell prospects what to expect…" />
+            </div>
+            <Button type="submit">Save lead settings</Button>
+          </form>
+        </Card>
+      </div>
+    </div>
+  );
+}
