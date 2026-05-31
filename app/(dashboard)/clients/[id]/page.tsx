@@ -22,6 +22,7 @@ import {
   type Project,
   type ActivityEntry,
   type WeeklyReport,
+  type TeamMember,
 } from "@/lib/types";
 import {
   createContractAction,
@@ -39,11 +40,12 @@ import {
   sendWelcomeEmailAction,
   updateEngagementAction,
   addWeeklyReportAction,
+  assignMemberAction,
 } from "./actions";
 
 export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  await requireContext();
+  const ctx = await requireContext();
   const supabase = await createClient();
 
   const { data: clientData } = await supabase.from("clients").select("*").eq("id", id).single();
@@ -61,6 +63,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
     { data: projects },
     { data: reports },
     { data: activity },
+    { data: teamData },
   ] = await Promise.all([
     supabase.from("contracts").select("*").eq("client_id", id).order("created_at", { ascending: false }),
     supabase.from("invoices").select("*").eq("client_id", id).order("created_at", { ascending: false }),
@@ -72,10 +75,13 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
     supabase.from("projects").select("*").eq("client_id", id).limit(1),
     supabase.from("weekly_reports").select("*").eq("client_id", id).order("created_at", { ascending: false }),
     supabase.from("activity_log").select("*").eq("client_id", id).order("created_at", { ascending: false }).limit(20),
+    supabase.from("team_members").select("*").eq("org_id", ctx.org.id).order("created_at"),
   ]);
 
   const project = (projects?.[0] ?? null) as Project | null;
   const kickoff0 = (kickoffs?.[0] ?? null) as Kickoff | null;
+  const team = (teamData as TeamMember[] | null) ?? [];
+  const assignedMember = team.find((m) => m.id === client.assigned_member_id) ?? null;
   const portalUrl = `${publicEnv.appUrl}/portal/${client.portal_token}`;
   const cid = <input type="hidden" name="client_id" value={client.id} />;
 
@@ -118,6 +124,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             resources={resources}
             slackUrl={project?.slack_url}
             whatsappUrl={project?.whatsapp_url}
+            expert={assignedMember ? { name: assignedMember.name, role: assignedMember.role } : null}
           />
 
           {/* Engagement */}
@@ -400,6 +407,30 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             aiBrief={client.ai_brief}
             hasResponses={!!responses && responses.length > 0}
           />
+
+          {/* Assigned expert */}
+          <Card>
+            <h2 className="mb-3 font-semibold text-zinc-900 dark:text-zinc-100">Assigned expert</h2>
+            {team.length === 0 ? (
+              <p className="text-sm text-zinc-500">
+                No team members yet. Add experts in <a href="/settings" className="font-medium text-indigo-600 hover:underline">Settings → Team</a>.
+              </p>
+            ) : (
+              <form action={assignMemberAction} className="flex items-end gap-2">
+                {cid}
+                <div className="flex-1">
+                  <Label htmlFor="assigned_member_id">Expert on this client</Label>
+                  <Select id="assigned_member_id" name="assigned_member_id" defaultValue={client.assigned_member_id ?? ""}>
+                    <option value="">Unassigned</option>
+                    {team.map((m) => (
+                      <option key={m.id} value={m.id}>{m.name}{m.role ? ` — ${m.role}` : ""}</option>
+                    ))}
+                  </Select>
+                </div>
+                <Button size="sm" type="submit">Save</Button>
+              </form>
+            )}
+          </Card>
 
           {/* Channels */}
           <Card>

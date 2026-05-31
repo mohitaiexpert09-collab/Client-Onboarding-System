@@ -18,6 +18,28 @@ export async function updateOrgAction(formData: FormData) {
   revalidatePath("/", "layout");
 }
 
+export async function addTeamMemberAction(formData: FormData) {
+  const ctx = await requireContext();
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) return;
+  const supabase = await createClient();
+  await supabase.from("team_members").insert({
+    org_id: ctx.org.id,
+    name,
+    role: String(formData.get("role") ?? "") || null,
+    email: String(formData.get("email") ?? "") || null,
+  });
+  revalidatePath("/settings");
+}
+
+export async function removeTeamMemberAction(formData: FormData) {
+  const ctx = await requireContext();
+  const id = String(formData.get("member_id"));
+  const supabase = await createClient();
+  await supabase.from("team_members").delete().eq("id", id).eq("org_id", ctx.org.id);
+  revalidatePath("/settings");
+}
+
 export async function updateLeadSettingsAction(formData: FormData) {
   const ctx = await requireContext();
   const supabase = await createClient();

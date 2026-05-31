@@ -45,6 +45,7 @@ export function ProjectPipeline({
   resources = [],
   slackUrl,
   whatsappUrl,
+  expert,
 }: {
   stage: Stage;
   timelineDays: number | null;
@@ -57,6 +58,7 @@ export function ProjectPipeline({
   resources?: PipelineResource[];
   slackUrl?: string | null;
   whatsappUrl?: string | null;
+  expert?: { name: string; role: string | null } | null;
 }) {
   const lifecyclePct = stageProgress(stage);
   const doneCount = milestones.filter((m) => m.status === "done").length;
@@ -105,6 +107,21 @@ export function ProjectPipeline({
             <Meter label="Timeline elapsed" pct={timePct} color={timePct > 90 ? "bg-red-500" : "bg-blue-500"} />
           )}
         </div>
+
+        {expert && (
+          <div className="mt-4 flex items-center gap-3 rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800/50">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+              {expert.name.charAt(0).toUpperCase()}
+            </span>
+            <div>
+              <p className="text-[11px] uppercase tracking-wider text-zinc-400">Your dedicated expert</p>
+              <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                {expert.name}
+                {expert.role ? ` · ${expert.role}` : ""}
+              </p>
+            </div>
+          </div>
+        )}
 
         {(scope || deliverables || valueCents || timelineDays) && (
           <dl className="mt-5 grid gap-3 border-t pt-4 text-sm sm:grid-cols-2">

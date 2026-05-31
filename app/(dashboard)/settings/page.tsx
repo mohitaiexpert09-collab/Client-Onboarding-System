@@ -1,9 +1,16 @@
 import { requireContext } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card, Badge, Button, Input, Label, Textarea } from "@/components/ui";
 import { CopyLink } from "@/components/clients/copy-link";
 import { isStripeConfigured, isResendConfigured, isAIConfigured, isSlackConfigured, publicEnv } from "@/lib/env";
-import { updateOrgAction, updateLeadSettingsAction } from "./actions";
+import type { TeamMember } from "@/lib/types";
+import {
+  updateOrgAction,
+  updateLeadSettingsAction,
+  addTeamMemberAction,
+  removeTeamMemberAction,
+} from "./actions";
 
 function statusBadge(ok: boolean) {
   return ok ? <Badge color="green">Connected</Badge> : <Badge color="zinc">Not configured</Badge>;
@@ -11,6 +18,13 @@ function statusBadge(ok: boolean) {
 
 export default async function SettingsPage() {
   const ctx = await requireContext();
+  const supabase = await createClient();
+  const { data: teamData } = await supabase
+    .from("team_members")
+    .select("*")
+    .eq("org_id", ctx.org.id)
+    .order("created_at");
+  const team = (teamData as TeamMember[] | null) ?? [];
   const esignConfigured = !!process.env.DROPBOX_SIGN_API_KEY;
   const n8nConfigured = !!process.env.N8N_WEBHOOK_URL;
 
@@ -59,6 +73,51 @@ export default async function SettingsPage() {
             All integrations are optional for testing — payments fall back to manual confirmation, emails log to
             the server console, and contracts use built-in click-to-sign until you add keys.
           </p>
+        </Card>
+
+        {/* Team */}
+        <Card className="lg:col-span-2">
+          <h2 className="mb-1 font-semibold text-zinc-900 dark:text-zinc-100">Team & experts</h2>
+          <p className="mb-4 text-sm text-zinc-500">
+            Add the specialists you assign to clients. Assigned experts show on the client&apos;s project
+            pipeline and in their portal.
+          </p>
+          {team.length > 0 && (
+            <ul className="mb-4 divide-y divide-zinc-100 dark:divide-zinc-800">
+              {team.map((m) => (
+                <li key={m.id} className="flex items-center justify-between py-2.5">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-50 text-sm font-semibold text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                      {m.name.charAt(0).toUpperCase()}
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{m.name}</p>
+                      <p className="text-xs text-zinc-500">{[m.role, m.email].filter(Boolean).join(" · ")}</p>
+                    </div>
+                  </div>
+                  <form action={removeTeamMemberAction}>
+                    <input type="hidden" name="member_id" value={m.id} />
+                    <Button size="sm" variant="ghost" type="submit">Remove</Button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          )}
+          <form action={addTeamMemberAction} className="flex flex-wrap items-end gap-2">
+            <div className="flex-1">
+              <Label htmlFor="tm-name">Name</Label>
+              <Input id="tm-name" name="name" required placeholder="Jane Doe" />
+            </div>
+            <div className="flex-1">
+              <Label htmlFor="tm-role">Role</Label>
+              <Input id="tm-role" name="role" placeholder="Lead Designer" />
+            </div>
+            <div className="flex-1">
+              <Label htmlFor="tm-email">Email (optional)</Label>
+              <Input id="tm-email" name="email" type="email" placeholder="jane@agency.com" />
+            </div>
+            <Button size="sm" type="submit">Add</Button>
+          </form>
         </Card>
 
         {/* Lead capture */}

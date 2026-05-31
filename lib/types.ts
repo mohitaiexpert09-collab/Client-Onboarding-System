@@ -78,8 +78,18 @@ export interface Client {
   source: "manual" | "lead_form";
   ai_brief: string | null;
   ai_brief_at: string | null;
+  assigned_member_id: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface TeamMember {
+  id: string;
+  org_id: string;
+  name: string;
+  role: string | null;
+  email: string | null;
+  created_at: string;
 }
 
 export interface WeeklyReport {

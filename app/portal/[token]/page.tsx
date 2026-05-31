@@ -91,6 +91,17 @@ export default async function PortalPage({
     })
   );
 
+  // The client's assigned expert (shown in their pipeline).
+  let expert: { name: string; role: string | null } | null = null;
+  if (client.assigned_member_id) {
+    const { data: m } = await admin
+      .from("team_members")
+      .select("name,role")
+      .eq("id", client.assigned_member_id)
+      .maybeSingle();
+    if (m) expert = { name: (m as { name: string }).name, role: (m as { role: string | null }).role };
+  }
+
   const banner =
     sp.paid ? "Payment received — thank you!"
     : sp.submitted ? "Thanks! Your responses were submitted."
@@ -261,6 +272,7 @@ export default async function PortalPage({
                 resources={resources}
                 slackUrl={project?.slack_url}
                 whatsappUrl={project?.whatsapp_url}
+                expert={expert}
               />
 
               {rs.length > 0 && (

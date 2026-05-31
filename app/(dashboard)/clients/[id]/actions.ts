@@ -247,6 +247,20 @@ export async function scheduleKickoffAction(formData: FormData) {
   revalidateClient(clientId);
 }
 
+// ---- Team assignment -------------------------------------------------------
+export async function assignMemberAction(formData: FormData) {
+  const clientId = String(formData.get("client_id"));
+  const { ctx, supabase } = await clientGuard(clientId);
+  const memberId = String(formData.get("assigned_member_id") ?? "") || null;
+  await supabase
+    .from("clients")
+    .update({ assigned_member_id: memberId })
+    .eq("id", clientId)
+    .eq("org_id", ctx.org.id);
+  await logActivity({ orgId: ctx.org.id, clientId, type: "member.assigned", message: "Expert assigned to client" });
+  revalidateClient(clientId);
+}
+
 // ---- Intake form -----------------------------------------------------------
 export async function sendIntakeFormAction(formData: FormData) {
   const clientId = String(formData.get("client_id"));
