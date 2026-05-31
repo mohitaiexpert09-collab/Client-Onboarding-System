@@ -92,9 +92,11 @@ export async function submitLeadAction(formData: FormData) {
             to: email,
             subject: `Your proposal from ${org.name}`,
             html: emailLayout({
-              heading: "Your proposal is ready",
-              body: `Thanks for your interest, ${name}. Review and sign your proposal to get started.`,
+              heading: "Your proposal is ready 🎉",
+              body: `Thanks for your interest, ${name}. We've prepared a proposal for you — review and sign it to get started.`,
               cta: { label: "Review & sign", url: `${publicEnv.appUrl}/portal/${client!.portal_token}` },
+              brandColor: org.brand_color ?? undefined,
+              orgName: org.name,
             }),
           });
         }
@@ -103,6 +105,31 @@ export async function submitLeadAction(formData: FormData) {
     } catch {
       // Fall through — lead is captured; the owner can send a proposal manually.
     }
+  }
+
+  // Always acknowledge the lead with a branded welcome email (unless the proposal
+  // email already went out, so we never double-email).
+  if (email && !proposalSent) {
+    await sendEmail({
+      to: email,
+      subject: `Thanks for reaching out to ${org.name}! 👋`,
+      html: emailLayout({
+        heading: `Thanks, ${name}! 👋`,
+        body:
+          `We've received your details and we're excited to learn more about your goals. ` +
+          `${org.name} will review your submission and be in touch shortly. In the meantime, ` +
+          `you can track everything in your private client portal.`,
+        cta: { label: "Open your portal", url: `${publicEnv.appUrl}/portal/${client!.portal_token}` },
+        brandColor: org.brand_color ?? undefined,
+        orgName: org.name,
+      }),
+    });
+    await admin.from("activity_log").insert({
+      org_id: org.id,
+      client_id: client!.id,
+      type: "welcome.sent",
+      message: "Welcome email sent to new lead",
+    });
   }
 
   redirect(`/apply/${slug}?submitted=1${proposalSent ? "&proposal=1" : ""}`);
