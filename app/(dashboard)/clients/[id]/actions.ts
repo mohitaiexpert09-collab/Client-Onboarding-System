@@ -258,18 +258,30 @@ export async function sendIntakeFormAction(formData: FormData) {
     .eq("id", clientId)
     .eq("org_id", ctx.org.id);
 
+  let sent = false;
   if (client?.email) {
-    await sendEmail({
+    sent = await sendEmail({
       to: client.email,
       subject: "Quick onboarding questionnaire",
       html: emailLayout({
         heading: "Let's get started",
         body: "Please complete a short onboarding questionnaire so we can hit the ground running.",
         cta: { label: "Complete questionnaire", url: `${publicEnv.appUrl}/portal/${client.portal_token}` },
+        brandColor: ctx.org.brand_color ?? undefined,
+        orgName: ctx.org.name,
       }),
     });
   }
-  await logActivity({ orgId: ctx.org.id, clientId, type: "form.sent", message: "Onboarding form sent" });
+  await logActivity({
+    orgId: ctx.org.id,
+    clientId,
+    type: "form.sent",
+    message: !client?.email
+      ? "Onboarding form ready — no client email on file"
+      : sent
+        ? "Onboarding form sent"
+        : `Onboarding email could NOT be delivered to ${client.email} — connect/verify Resend (free tier only sends to your own Resend account email)`,
+  });
   revalidateClient(clientId);
 }
 

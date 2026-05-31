@@ -110,7 +110,7 @@ export async function submitLeadAction(formData: FormData) {
   // Always acknowledge the lead with a branded welcome email (unless the proposal
   // email already went out, so we never double-email).
   if (email && !proposalSent) {
-    await sendEmail({
+    const sent = await sendEmail({
       to: email,
       subject: `Thanks for reaching out to ${org.name}! 👋`,
       html: emailLayout({
@@ -128,7 +128,9 @@ export async function submitLeadAction(formData: FormData) {
       org_id: org.id,
       client_id: client!.id,
       type: "welcome.sent",
-      message: "Welcome email sent to new lead",
+      message: sent
+        ? "Welcome email sent to new lead"
+        : `Welcome email could NOT be delivered to ${email} — connect/verify Resend (free tier only sends to your own Resend account email)`,
     });
   }
 
