@@ -24,6 +24,7 @@ import {
   uploadFileAction,
   bookKickoffAction,
 } from "./actions";
+import { Markdown } from "@/components/documents/markdown";
 
 const DEFAULT_INTAKE: FormField[] = [
   { key: "goals", label: "What are your main goals for this engagement?", type: "textarea", required: true },
@@ -109,8 +110,8 @@ export default async function PortalPage({
             <h2 className="mb-1 font-semibold text-zinc-900 dark:text-zinc-100">1 · Sign your agreement</h2>
             <p className="mb-3 text-sm text-zinc-500">{pendingContract.title}</p>
             {pendingContract.body && (
-              <div className="mb-3 max-h-48 overflow-y-auto whitespace-pre-wrap rounded-lg border border-zinc-100 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-                {pendingContract.body}
+              <div className="mb-3 max-h-48 overflow-y-auto rounded-lg border border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900">
+                <Markdown content={pendingContract.body} className="text-sm" />
               </div>
             )}
             <div className="mb-3">

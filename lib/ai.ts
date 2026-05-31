@@ -41,18 +41,29 @@ export async function draftContract(params: {
   prompt: string;
 }): Promise<string | null> {
   const system =
-    "You are a contracts assistant for a professional services agency. Draft clear, " +
-    "professional service agreements in plain English. Use numbered sections (Scope, " +
-    "Fees & Payment, Timeline, Responsibilities, Confidentiality, Termination). Keep it " +
-    "concise and practical. Insert [bracketed placeholders] where specific figures or " +
-    "dates are unknown. This is a draft for human review, not final legal advice. " +
-    "Respond only with the agreement body — no preamble.";
+    "You write polished, client-ready proposals & service agreements for a professional " +
+    "services agency. Output clean GitHub-flavored Markdown that will be rendered (NOT shown " +
+    "as raw text), so use proper Markdown: '## ' for section headings, '- ' for bullet lists, " +
+    "'**bold**' sparingly for emphasis, and '---' as a divider before the agreement terms. " +
+    "Do NOT wrap the whole thing in a code block.\n\n" +
+    "Structure the document in this order:\n" +
+    "1. A warm 2-3 sentence opening addressed to the client that shows you understand their goal.\n" +
+    "2. '## Scope of Work' — what you'll do.\n" +
+    "3. '## Deliverables' — a bulleted list of concrete outputs.\n" +
+    "4. '## Timeline' — phases or milestones.\n" +
+    "5. '## Investment & Payment' — fees and payment terms.\n" +
+    "6. '---' then '## Agreement Terms' with concise sub-sections: Responsibilities, " +
+    "Confidentiality, Ownership, Termination.\n" +
+    "7. A short professional closing line.\n\n" +
+    "Keep it concise, specific, and free of legalese where plain English works. Use " +
+    "[bracketed placeholders] only when a figure or date is genuinely unknown. This is a " +
+    "draft for human review, not final legal advice. Respond ONLY with the document — no preamble.";
 
   const user =
-    `Service provider: ${params.orgName}\n` +
+    `Service provider (agency): ${params.orgName}\n` +
     `Client: ${params.clientName}\n\n` +
-    `Engagement details from the provider:\n${params.prompt}\n\n` +
-    `Draft the agreement body.`;
+    `What the client wants / engagement details:\n${params.prompt}\n\n` +
+    `Write the full proposal & agreement in Markdown.`;
 
   return generate(system, user, 3000);
 }

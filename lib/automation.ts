@@ -60,10 +60,12 @@ export async function runPaymentSucceeded(orgId: string, clientId: string) {
   if (client.email) {
     await sendEmail({
       to: client.email,
-      subject: `Welcome aboard, ${client.name}!`,
+      subject: `Welcome aboard, ${client.name}! 🎉`,
       html: emailLayout({
         heading: `Welcome, ${client.name}!`,
-        body: "Payment received — we're excited to get started. Use your portal to complete onboarding.",
+        body:
+          "Payment received — we're thrilled to get started. 🎁 A small welcome gift is on its way " +
+          "to you. In the meantime, use your portal to complete onboarding so we can hit the ground running.",
         cta: { label: "Continue onboarding", url: `${publicEnv.appUrl}/portal/${client.portal_token}` },
       }),
     });
@@ -77,6 +79,8 @@ export async function runPaymentSucceeded(orgId: string, clientId: string) {
       { org_id: orgId, client_id: clientId, title: "Complete onboarding questionnaire", assignee: "client" },
       { org_id: orgId, client_id: clientId, title: "Share brand assets & access", assignee: "client" },
       { org_id: orgId, client_id: clientId, title: "Book kickoff call", assignee: "client" },
+      { org_id: orgId, client_id: clientId, title: "🎁 Send welcome gift to client", assignee: "owner" },
+      { org_id: orgId, client_id: clientId, title: "Assign expert / team to project", assignee: "owner" },
       { org_id: orgId, client_id: clientId, title: "Set up project workspace", assignee: "owner" },
       { org_id: orgId, client_id: clientId, title: "Define quick win", assignee: "owner" },
     ]);

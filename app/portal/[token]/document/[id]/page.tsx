@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { DocumentShell } from "@/components/documents/document-shell";
+import { Markdown } from "@/components/documents/markdown";
 import { formatMoney, type Client, type Organization, type Contract } from "@/lib/types";
 
 const PAYMENT_LABELS: Record<Client["payment_structure"], string> = {
@@ -87,9 +88,7 @@ export default async function DocumentPage({
       )}
 
       {/* Body */}
-      {contract.body && (
-        <div className="whitespace-pre-wrap text-[15px] leading-relaxed text-zinc-700">{contract.body}</div>
-      )}
+      {contract.body && <Markdown content={contract.body} />}
 
       {/* Signature block */}
       <div className="mt-12 grid gap-8 border-t pt-8 sm:grid-cols-2">
