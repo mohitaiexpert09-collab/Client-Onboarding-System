@@ -53,8 +53,23 @@ export async function submitLeadAction(formData: FormData) {
     message: `New lead "${name}" via public form`,
   });
 
+  // Guardrail: cap AI auto-proposals per workspace per day so the public lead
+  // form can't burn through OpenAI credits. Default 20/day; override with
+  // AI_DAILY_PROPOSAL_LIMIT. The lead is always captured regardless.
+  const dailyLimit = Number(process.env.AI_DAILY_PROPOSAL_LIMIT || 20);
+  const since = new Date();
+  since.setHours(0, 0, 0, 0);
+  const { count: aiToday } = await admin
+    .from("activity_log")
+    .select("id", { count: "exact", head: true })
+    .eq("org_id", org.id)
+    .eq("type", "contract.sent")
+    .ilike("message", "%auto-generated%")
+    .gte("created_at", since.toISOString());
+  const withinAiLimit = (aiToday ?? 0) < dailyLimit;
+
   let proposalSent = false;
-  if (org.lead_auto_proposal && isAIConfigured() && scope) {
+  if (org.lead_auto_proposal && isAIConfigured() && scope && withinAiLimit) {
     try {
       const body = await draftContract({ orgName: org.name, clientName: name, prompt: scope });
       if (body) {
