@@ -4,7 +4,7 @@ import { isSupabaseConfigured } from "@/lib/env";
 import { DocumentShell } from "@/components/documents/document-shell";
 import { formatMoney, type Client, type Organization, type Invoice } from "@/lib/types";
 
-/** Client-facing, printable invoice. */
+/** Client-facing, printable invoice — premium styling. */
 export default async function InvoicePage({
   params,
 }: {
@@ -31,73 +31,106 @@ export default async function InvoicePage({
   const org = orgData as Organization;
   const brand = org.brand_color || "#4f46e5";
   const number = invoice.id.slice(0, 8).toUpperCase();
+  const paid = invoice.status === "paid";
+  const amount = formatMoney(invoice.amount_cents, invoice.currency);
 
   return (
-    <DocumentShell brandColor={brand} orgName={org.name} docLabel="Invoice">
-      <div className="mb-8 flex items-start justify-between">
-        <div className="text-sm">
-          <p className="mb-1 text-xs uppercase tracking-wider text-zinc-400">Billed to</p>
-          <p className="font-semibold text-zinc-900">{client.name}</p>
-          {client.company && <p className="text-zinc-600">{client.company}</p>}
-          {client.email && <p className="text-zinc-500">{client.email}</p>}
+    <DocumentShell
+      brandColor={brand}
+      orgName={org.name}
+      logoUrl={org.logo_url}
+      docLabel="Invoice"
+      headerRight={
+        <div className="mt-1 text-sm">
+          <p className="font-semibold">#{number}</p>
         </div>
-        <div className="text-right text-sm">
-          <p className="text-2xl font-bold text-zinc-900">Invoice</p>
-          <p className="text-zinc-500">#{number}</p>
-          <p className="mt-2 text-xs text-zinc-400">Issued {new Date(invoice.created_at).toLocaleDateString()}</p>
-          {invoice.due_date && (
-            <p className="text-xs text-zinc-400">Due {new Date(invoice.due_date).toLocaleDateString()}</p>
-          )}
+      }
+    >
+      {/* Title + status */}
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900">Invoice</h1>
+          <div className="mt-1 h-1 w-16 rounded-full" style={{ backgroundColor: brand }} />
+        </div>
+        <span
+          className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider ${
+            paid ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+          }`}
+        >
+          {paid ? "Paid" : "Due"}
+        </span>
+      </div>
+
+      {/* From / Bill to / dates */}
+      <div className="mb-8 grid gap-6 sm:grid-cols-3">
+        <div>
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-zinc-400">From</p>
+          <p className="font-semibold text-zinc-900">{org.name}</p>
+        </div>
+        <div>
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-zinc-400">Billed to</p>
+          <p className="font-semibold text-zinc-900">{client.name}</p>
+          {client.company && <p className="text-sm text-zinc-600">{client.company}</p>}
+          {client.email && <p className="text-sm text-zinc-500">{client.email}</p>}
+        </div>
+        <div className="sm:text-right">
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-zinc-400">Details</p>
+          <p className="text-sm text-zinc-600">Issued {new Date(invoice.created_at).toLocaleDateString()}</p>
+          {invoice.due_date && <p className="text-sm text-zinc-600">Due {new Date(invoice.due_date).toLocaleDateString()}</p>}
+          {paid && invoice.paid_at && <p className="text-sm text-green-600">Paid {new Date(invoice.paid_at).toLocaleDateString()}</p>}
         </div>
       </div>
 
-      <table className="mb-6 w-full text-sm">
+      {/* Line items */}
+      <table className="mb-2 w-full text-sm">
         <thead>
-          <tr className="border-b text-left text-xs uppercase tracking-wider text-zinc-400">
-            <th className="pb-2">Description</th>
-            <th className="pb-2 text-right">Amount</th>
+          <tr style={{ backgroundColor: brand }} className="text-white">
+            <th className="rounded-l-lg px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Description</th>
+            <th className="rounded-r-lg px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider">Amount</th>
           </tr>
         </thead>
         <tbody>
-          <tr className="border-b">
-            <td className="py-4 text-zinc-800">{invoice.description || "Professional services"}</td>
-            <td className="py-4 text-right text-zinc-800">{formatMoney(invoice.amount_cents, invoice.currency)}</td>
+          <tr className="border-b border-zinc-100">
+            <td className="px-4 py-4 text-zinc-800">{invoice.description || "Professional services"}</td>
+            <td className="px-4 py-4 text-right font-medium text-zinc-800">{amount}</td>
           </tr>
         </tbody>
-        <tfoot>
-          <tr>
-            <td className="pt-4 text-right font-semibold text-zinc-900">Total due</td>
-            <td className="pt-4 text-right text-lg font-bold" style={{ color: brand }}>
-              {formatMoney(invoice.amount_cents, invoice.currency)}
-            </td>
-          </tr>
-        </tfoot>
       </table>
 
-      <div className="flex items-center justify-between rounded-lg bg-zinc-50 px-5 py-4">
-        <span className="text-sm text-zinc-500">Status</span>
-        {invoice.status === "paid" ? (
-          <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-            PAID{invoice.paid_at ? ` · ${new Date(invoice.paid_at).toLocaleDateString()}` : ""}
-          </span>
-        ) : (
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">DUE</span>
-        )}
-      </div>
-
-      {invoice.status !== "paid" && (
-        <div className="doc-toolbar mt-6 text-center">
-          <a
-            href={`/portal/${token}`}
-            className="inline-flex rounded-lg px-5 py-2.5 text-sm font-medium text-white shadow-sm"
+      {/* Totals */}
+      <div className="mb-8 flex justify-end">
+        <div className="w-64 space-y-2">
+          <div className="flex justify-between px-4 text-sm text-zinc-500">
+            <span>Subtotal</span>
+            <span>{amount}</span>
+          </div>
+          <div
+            className="flex items-center justify-between rounded-lg px-4 py-3 text-white"
             style={{ backgroundColor: brand }}
           >
-            Pay this invoice →
+            <span className="text-sm font-semibold uppercase tracking-wider">Total due</span>
+            <span className="text-xl font-bold">{paid ? formatMoney(0, invoice.currency) : amount}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Pay CTA (screen only) */}
+      {!paid && (
+        <div className="doc-toolbar mb-8 rounded-xl bg-zinc-50 p-5 text-center">
+          <p className="mb-3 text-sm text-zinc-600">Ready to get started? Complete your payment securely.</p>
+          <a
+            href={`/portal/${token}`}
+            className="inline-flex rounded-lg px-6 py-2.5 text-sm font-semibold text-white shadow-sm"
+            style={{ backgroundColor: brand }}
+          >
+            Pay {amount} →
           </a>
         </div>
       )}
 
-      <p className="mt-10 text-center text-xs text-zinc-400">Thank you for your business — {org.name}</p>
+      <div className="border-t border-zinc-100 pt-5 text-center text-sm text-zinc-400">
+        Thank you for your business — {org.name}
+      </div>
     </DocumentShell>
   );
 }
