@@ -12,10 +12,12 @@ function statusBadge(ok: boolean) {
 export default async function SettingsPage() {
   const ctx = await requireContext();
   const esignConfigured = !!process.env.DROPBOX_SIGN_API_KEY;
+  const n8nConfigured = !!process.env.N8N_WEBHOOK_URL;
 
   const integrations = [
     { name: "Stripe (payments)", ok: isStripeConfigured(), hint: "Add STRIPE_SECRET_KEY to .env.local" },
     { name: "Resend (email)", ok: isResendConfigured(), hint: "Add RESEND_API_KEY to .env.local" },
+    { name: "n8n (email via webhook)", ok: n8nConfigured, hint: "Add N8N_WEBHOOK_URL to route emails through n8n → Gmail (sends to any address)" },
     { name: "Slack (client channels)", ok: isSlackConfigured(), hint: "Add SLACK_BOT_TOKEN (xoxb-…) to auto-create client channels" },
     { name: "Dropbox Sign (e-signature)", ok: esignConfigured, hint: "Optional — built-in click-to-sign works without it" },
     { name: "OpenAI (AI assists)", ok: isAIConfigured(), hint: "Add OPENAI_API_KEY for AI contract drafts, intake summaries & weekly updates" },

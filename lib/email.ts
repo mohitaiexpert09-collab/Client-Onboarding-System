@@ -1,20 +1,46 @@
 import { isResendConfigured } from "@/lib/env";
 
 /**
- * Send a transactional email via Resend. If Resend isn't configured, this is a
- * graceful no-op (logs to the server console) so flows still work in dev.
- * Returns true if actually sent.
+ * Send a transactional email. Transport precedence:
+ *   1. n8n webhook (N8N_WEBHOOK_URL) — POSTs { to, subject, html, from } so an
+ *      n8n workflow (e.g. a Gmail node) delivers it. Best for sending to ANY
+ *      address for free without verifying a domain.
+ *   2. Resend (RESEND_API_KEY).
+ *   3. Neither → graceful no-op (logged), so flows never break.
+ * Returns true only if the email was actually accepted for delivery.
  */
 export async function sendEmail(params: {
   to: string;
   subject: string;
   html: string;
 }): Promise<boolean> {
+  const from = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+
+  // 1. n8n webhook transport (takes priority when configured).
+  const n8nUrl = process.env.N8N_WEBHOOK_URL;
+  if (n8nUrl) {
+    try {
+      const res = await fetch(n8nUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: params.to, subject: params.subject, html: params.html, from }),
+      });
+      if (!res.ok) {
+        console.warn(`[email:n8n-failed] to=${params.to} status=${res.status}`);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.warn(`[email:n8n-error] to=${params.to} —`, err);
+      return false;
+    }
+  }
+
+  // 2. Resend transport.
   if (!isResendConfigured()) {
     console.log(`[email:skipped] to=${params.to} subject="${params.subject}"`);
     return false;
   }
-  const from = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
   try {
     const { getResend } = await import("@/lib/integrations/resend");
     const { error } = await getResend().emails.send({
