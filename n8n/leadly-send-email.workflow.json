@@ -23,10 +23,10 @@
       "parameters": {
         "resource": "message",
         "operation": "send",
-        "sendTo": "={{ $json.body.to }}",
-        "subject": "={{ $json.body.subject }}",
+        "sendTo": "={{ $json.body?.to ?? $json.to }}",
+        "subject": "={{ $json.body?.subject ?? $json.subject }}",
         "emailType": "html",
-        "message": "={{ $json.body.html }}",
+        "message": "={{ $json.body?.html ?? $json.html }}",
         "options": {}
       },
       "id": "b1a7c0de-2222-4a2b-9c3d-000000000002",

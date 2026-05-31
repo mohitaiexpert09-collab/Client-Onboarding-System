@@ -16,7 +16,8 @@ export async function sendEmail(params: {
 }): Promise<boolean> {
   const from = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 
-  // 1. n8n webhook transport (takes priority when configured).
+  // 1. n8n webhook transport (preferred when configured). If it fails, we don't
+  //    give up — we fall through to Resend so email still goes out.
   const n8nUrl = process.env.N8N_WEBHOOK_URL;
   if (n8nUrl) {
     try {
@@ -25,18 +26,14 @@ export async function sendEmail(params: {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ to: params.to, subject: params.subject, html: params.html, from }),
       });
-      if (!res.ok) {
-        console.warn(`[email:n8n-failed] to=${params.to} status=${res.status}`);
-        return false;
-      }
-      return true;
+      if (res.ok) return true;
+      console.warn(`[email:n8n-failed] to=${params.to} status=${res.status} — falling back to Resend`);
     } catch (err) {
-      console.warn(`[email:n8n-error] to=${params.to} —`, err);
-      return false;
+      console.warn(`[email:n8n-error] to=${params.to} — falling back to Resend`, err);
     }
   }
 
-  // 2. Resend transport.
+  // 2. Resend transport (also the fallback when n8n is configured but failing).
   if (!isResendConfigured()) {
     console.log(`[email:skipped] to=${params.to} subject="${params.subject}"`);
     return false;
