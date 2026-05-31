@@ -60,6 +60,11 @@ export function isAIConfigured(): boolean {
   return !!(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith("sk-"));
 }
 
+/** True when a Slack bot token is present (auto-create client channels). */
+export function isSlackConfigured(): boolean {
+  return !!(process.env.SLACK_BOT_TOKEN && process.env.SLACK_BOT_TOKEN.startsWith("xoxb-"));
+}
+
 /** Server-only secrets. Calling any getter validates presence at call time. */
 export const serverEnv = {
   get supabaseServiceRoleKey() {

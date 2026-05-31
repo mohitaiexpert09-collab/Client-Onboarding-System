@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/server";
 import { sendEmail, emailLayout } from "@/lib/email";
+import { createClientChannel, isSlackConfigured } from "@/lib/integrations/slack";
 import { publicEnv } from "@/lib/env";
 import type { Client } from "@/lib/types";
 
@@ -108,5 +109,25 @@ export async function runKickoffBooked(orgId: string, clientId: string) {
       type: "quick_win",
     });
     await log(orgId, clientId, "milestone.created", "Quick Win milestone created (automation)");
+  }
+
+  // Auto-provision a Slack channel on kickoff if configured and not already linked.
+  if (isSlackConfigured()) {
+    const { data: proj } = await admin
+      .from("projects")
+      .select("id,slack_url")
+      .eq("client_id", clientId)
+      .maybeSingle();
+    if (!proj?.slack_url) {
+      const result = await createClientChannel({ clientName: client.name, clientEmail: client.email });
+      if (result) {
+        if (proj) {
+          await admin.from("projects").update({ slack_url: result.url }).eq("id", proj.id);
+        } else {
+          await admin.from("projects").insert({ org_id: orgId, client_id: clientId, name: "Engagement", slack_url: result.url });
+        }
+        await log(orgId, clientId, "channel.created", `Slack channel #${result.name} auto-created (kickoff)`);
+      }
+    }
   }
 }

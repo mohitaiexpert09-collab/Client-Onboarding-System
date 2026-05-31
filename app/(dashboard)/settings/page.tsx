@@ -2,7 +2,7 @@ import { requireContext } from "@/lib/auth";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card, Badge, Button, Input, Label, Textarea } from "@/components/ui";
 import { CopyLink } from "@/components/clients/copy-link";
-import { isStripeConfigured, isResendConfigured, isAIConfigured, publicEnv } from "@/lib/env";
+import { isStripeConfigured, isResendConfigured, isAIConfigured, isSlackConfigured, publicEnv } from "@/lib/env";
 import { updateOrgAction, updateLeadSettingsAction } from "./actions";
 
 function statusBadge(ok: boolean) {
@@ -16,6 +16,7 @@ export default async function SettingsPage() {
   const integrations = [
     { name: "Stripe (payments)", ok: isStripeConfigured(), hint: "Add STRIPE_SECRET_KEY to .env.local" },
     { name: "Resend (email)", ok: isResendConfigured(), hint: "Add RESEND_API_KEY to .env.local" },
+    { name: "Slack (client channels)", ok: isSlackConfigured(), hint: "Add SLACK_BOT_TOKEN (xoxb-…) to auto-create client channels" },
     { name: "Dropbox Sign (e-signature)", ok: esignConfigured, hint: "Optional — built-in click-to-sign works without it" },
     { name: "OpenAI (AI assists)", ok: isAIConfigured(), hint: "Add OPENAI_API_KEY for AI contract drafts, intake summaries & weekly updates" },
   ];

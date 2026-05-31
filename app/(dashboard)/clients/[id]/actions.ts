@@ -7,6 +7,7 @@ import { logActivity } from "@/lib/activity";
 import { sendEmail, emailLayout } from "@/lib/email";
 import { emitEvent } from "@/lib/events";
 import { runPaymentSucceeded, runKickoffBooked } from "@/lib/automation";
+import { createClientChannel } from "@/lib/integrations/slack";
 import { publicEnv } from "@/lib/env";
 
 async function clientGuard(clientId: string) {
@@ -193,6 +194,38 @@ export async function setChannelsAction(formData: FormData) {
     });
   }
   await logActivity({ orgId: ctx.org.id, clientId, type: "channel.set", message: "Client channel linked" });
+  revalidateClient(clientId);
+}
+
+/** Auto-create a real Slack channel for the client and store its link. */
+export async function createSlackChannelAction(formData: FormData) {
+  const clientId = String(formData.get("client_id"));
+  const { ctx, supabase, client } = await clientGuard(clientId);
+  if (!client) return;
+
+  const result = await createClientChannel({
+    clientName: client.name,
+    clientEmail: client.email,
+    orgName: ctx.org.name,
+  });
+  if (!result) {
+    await logActivity({ orgId: ctx.org.id, clientId, type: "channel.error", message: "Slack channel creation unavailable — add a bot token or use the manual link" });
+    revalidateClient(clientId);
+    return;
+  }
+
+  const { data: existing } = await supabase
+    .from("projects")
+    .select("id")
+    .eq("client_id", clientId)
+    .eq("org_id", ctx.org.id)
+    .maybeSingle();
+  if (existing) {
+    await supabase.from("projects").update({ slack_url: result.url }).eq("id", existing.id);
+  } else {
+    await supabase.from("projects").insert({ org_id: ctx.org.id, client_id: clientId, name: "Engagement", slack_url: result.url });
+  }
+  await logActivity({ orgId: ctx.org.id, clientId, type: "channel.created", message: `Slack channel #${result.name} created` });
   revalidateClient(clientId);
 }
 

@@ -7,7 +7,7 @@ import { StageSelect } from "@/components/clients/stage-select";
 import { CopyLink } from "@/components/clients/copy-link";
 import { AiPanel } from "@/components/clients/ai-panel";
 import { ProjectPipeline, type PipelineResource } from "@/components/project/pipeline";
-import { publicEnv, isAIConfigured } from "@/lib/env";
+import { publicEnv, isAIConfigured, isSlackConfigured } from "@/lib/env";
 import {
   STAGE_LABEL,
   formatMoney,
@@ -33,6 +33,7 @@ import {
   addMilestoneAction,
   updateMilestoneAction,
   setChannelsAction,
+  createSlackChannelAction,
   scheduleKickoffAction,
   sendIntakeFormAction,
   sendWelcomeEmailAction,
@@ -403,6 +404,13 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           {/* Channels */}
           <Card>
             <h2 className="mb-3 font-semibold text-zinc-900 dark:text-zinc-100">Communication channel</h2>
+            {isSlackConfigured() && (
+              <form action={createSlackChannelAction} className="mb-3">
+                {cid}
+                <Button size="sm" type="submit">💬 Auto-create Slack channel</Button>
+                <p className="mt-1 text-xs text-zinc-500">Creates a dedicated #client channel, posts a welcome, and saves the link below.</p>
+              </form>
+            )}
             <form action={setChannelsAction} className="space-y-2">
               {cid}
               <div>
