@@ -9,9 +9,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const ctx = await requireContext();
 
   return (
-    <div className="flex min-h-screen bg-zinc-50 dark:bg-black">
+    <div className="min-h-screen bg-zinc-50 dark:bg-black">
       <Sidebar orgName={ctx.org.name} />
-      <main className="flex-1 overflow-x-hidden">{children}</main>
+      <main className="min-w-0 overflow-x-hidden md:pl-60">
+        <div className="mx-auto max-w-[1600px]">{children}</div>
+      </main>
     </div>
   );
 }

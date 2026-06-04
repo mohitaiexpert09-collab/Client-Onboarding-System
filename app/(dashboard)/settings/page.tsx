@@ -40,7 +40,7 @@ export default async function SettingsPage() {
   return (
     <div>
       <PageHeader title="Settings" subtitle="Workspace and integrations" />
-      <div className="grid gap-6 p-8 lg:grid-cols-2">
+      <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-2 lg:p-8">
         <Card>
           <h2 className="mb-4 font-semibold text-zinc-900 dark:text-zinc-100">Workspace</h2>
           <form action={updateOrgAction} className="space-y-3">
@@ -87,7 +87,7 @@ export default async function SettingsPage() {
               {team.map((m) => (
                 <li key={m.id} className="flex items-center justify-between py-2.5">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-50 text-sm font-semibold text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand-600 dark:bg-brand-900/30 dark:text-brand-400">
                       {m.name.charAt(0).toUpperCase()}
                     </span>
                     <div>

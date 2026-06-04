@@ -108,7 +108,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
         }
       />
 
-      <div className="grid gap-6 p-8 lg:grid-cols-3">
+      <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-3 lg:p-8">
         {/* Left column */}
         <div className="space-y-6 lg:col-span-2">
           {/* Project pipeline */}
@@ -140,8 +140,8 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                 <Label htmlFor="deliverables">Deliverables</Label>
                 <Textarea id="deliverables" name="deliverables" rows={2} defaultValue={client.deliverables ?? ""} placeholder="What the client receives…" />
               </div>
-              <div className="flex items-end gap-3">
-                <div className="w-32">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div className="sm:w-32">
                   <Label htmlFor="timeline_days">Timeline (days)</Label>
                   <Input id="timeline_days" name="timeline_days" type="number" min="0" defaultValue={client.timeline_days ?? ""} placeholder="14" />
                 </div>
@@ -153,7 +153,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                     <option value="retainer">Monthly retainer</option>
                   </Select>
                 </div>
-                <Button size="sm" type="submit">Save</Button>
+                <Button size="sm" type="submit" className="w-full sm:w-auto">Save</Button>
               </div>
             </form>
           </Card>
@@ -170,7 +170,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge color={c.status === "signed" ? "green" : c.status === "sent" ? "amber" : "zinc"}>{c.status}</Badge>
-                    <a href={`${portalUrl}/document/${c.id}`} target="_blank" rel="noreferrer" className="text-xs font-medium text-indigo-600 hover:underline">PDF</a>
+                    <a href={`${portalUrl}/document/${c.id}`} target="_blank" rel="noreferrer" className="text-xs font-medium text-brand-600 hover:underline">PDF</a>
                     {c.status === "draft" && (
                       <form action={sendContractAction}>
                         {cid}
@@ -184,7 +184,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
               {(!contracts || contracts.length === 0) && <p className="text-sm text-zinc-500">No contracts yet.</p>}
             </div>
             <details className="mt-3">
-              <summary className="cursor-pointer text-sm font-medium text-indigo-600">+ Draft a contract</summary>
+              <summary className="cursor-pointer text-sm font-medium text-brand-600">+ Draft a contract</summary>
               <form action={createContractAction} className="mt-3 space-y-2">
                 {cid}
                 <Input name="title" placeholder="Service Agreement" defaultValue="Service Agreement" />
@@ -206,7 +206,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge color={inv.status === "paid" ? "green" : inv.status === "sent" ? "amber" : "zinc"}>{inv.status}</Badge>
-                    <a href={`${portalUrl}/invoice/${inv.id}`} target="_blank" rel="noreferrer" className="text-xs font-medium text-indigo-600 hover:underline">PDF</a>
+                    <a href={`${portalUrl}/invoice/${inv.id}`} target="_blank" rel="noreferrer" className="text-xs font-medium text-brand-600 hover:underline">PDF</a>
                     {inv.status !== "paid" && (
                       <form action={markInvoicePaidAction}>
                         {cid}
@@ -220,7 +220,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
               {(!invoices || invoices.length === 0) && <p className="text-sm text-zinc-500">No invoices yet.</p>}
             </div>
             <details className="mt-3">
-              <summary className="cursor-pointer text-sm font-medium text-indigo-600">+ Create invoice</summary>
+              <summary className="cursor-pointer text-sm font-medium text-brand-600">+ Create invoice</summary>
               <form action={createInvoiceAction} className="mt-3 flex items-end gap-2">
                 {cid}
                 <div className="flex-1">
@@ -262,7 +262,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
               {(!milestones || milestones.length === 0) && <p className="text-sm text-zinc-500">No milestones yet.</p>}
             </div>
             <details className="mt-3">
-              <summary className="cursor-pointer text-sm font-medium text-indigo-600">+ Add milestone</summary>
+              <summary className="cursor-pointer text-sm font-medium text-brand-600">+ Add milestone</summary>
               <form action={addMilestoneAction} className="mt-3 flex items-end gap-2">
                 {cid}
                 <div className="flex-1">
@@ -290,7 +290,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                   <button type="submit" className="flex items-center gap-2 text-left">
                     <span
                       className={`flex h-4 w-4 items-center justify-center rounded border ${
-                        t.status === "done" ? "border-indigo-600 bg-indigo-600 text-white" : "border-zinc-300"
+                        t.status === "done" ? "border-brand-600 bg-brand-600 text-white" : "border-zinc-300"
                       }`}
                     >
                       {t.status === "done" ? "✓" : ""}
@@ -334,7 +334,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
               {(!reports || reports.length === 0) && <p className="text-sm text-zinc-500">No reports yet.</p>}
             </div>
             <details className="mt-3">
-              <summary className="cursor-pointer text-sm font-medium text-indigo-600">+ New weekly report</summary>
+              <summary className="cursor-pointer text-sm font-medium text-brand-600">+ New weekly report</summary>
               <form action={addWeeklyReportAction} className="mt-3 space-y-2">
                 {cid}
                 <Input name="title" placeholder="Report title (optional)" />
@@ -413,7 +413,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             <h2 className="mb-3 font-semibold text-zinc-900 dark:text-zinc-100">Assigned expert</h2>
             {team.length === 0 ? (
               <p className="text-sm text-zinc-500">
-                No team members yet. Add experts in <a href="/settings" className="font-medium text-indigo-600 hover:underline">Settings → Team</a>.
+                No team members yet. Add experts in <a href="/settings" className="font-medium text-brand-600 hover:underline">Settings → Team</a>.
               </p>
             ) : (
               <form action={assignMemberAction} className="flex items-end gap-2">

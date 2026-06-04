@@ -16,7 +16,7 @@ export function SetupNotice() {
         <ol className="list-decimal space-y-2 pl-5 text-sm text-zinc-600 dark:text-zinc-400">
           <li>
             Create a free project at{" "}
-            <a className="text-indigo-600 underline" href="https://supabase.com" target="_blank" rel="noreferrer">
+            <a className="text-brand-600 underline" href="https://supabase.com" target="_blank" rel="noreferrer">
               supabase.com
             </a>
             .

@@ -18,7 +18,7 @@ export function Markdown({ content, className = "" }: { content: string; classNa
         "[&_h3]:mb-1 [&_h3]:mt-5 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-zinc-900 " +
         "[&_p]:mb-3 [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 " +
         "[&_li]:mb-1 [&_strong]:font-semibold [&_strong]:text-zinc-900 [&_em]:italic " +
-        "[&_hr]:my-6 [&_hr]:border-zinc-200 [&_a]:text-indigo-600 [&_a]:underline " +
+        "[&_hr]:my-6 [&_hr]:border-zinc-200 [&_a]:text-brand-600 [&_a]:underline " +
         "[&_table]:my-3 [&_table]:w-full [&_th]:border-b [&_th]:py-1 [&_th]:text-left [&_td]:py-1 " +
         className
       }

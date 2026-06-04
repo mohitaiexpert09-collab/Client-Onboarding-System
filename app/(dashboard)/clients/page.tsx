@@ -24,13 +24,13 @@ export default async function ClientsPage() {
       />
 
       {clients.length === 0 ? (
-        <div className="p-8">
+        <div className="p-4 sm:p-6 lg:p-8">
           <div className="rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-700">
             <p className="text-zinc-500">No clients yet. Add your first client to start the lifecycle.</p>
           </div>
         </div>
       ) : (
-        <div className="overflow-x-auto p-8">
+        <div className="overflow-x-auto p-4 sm:p-6 lg:p-8">
           <div className="flex gap-4" style={{ minWidth: "max-content" }}>
             {STAGES.map((stage) => {
               const inStage = clients.filter((c) => c.stage === stage.key);

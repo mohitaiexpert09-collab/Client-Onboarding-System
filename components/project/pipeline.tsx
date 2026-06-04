@@ -101,7 +101,7 @@ export function ProjectPipeline({
         </div>
 
         <div className="space-y-3">
-          <Meter label="Lifecycle" pct={lifecyclePct} color="bg-indigo-600" />
+          <Meter label="Lifecycle" pct={lifecyclePct} color="bg-brand-600" />
           {milestones.length > 0 && <Meter label="Milestones delivered" pct={msPct} color="bg-green-500" />}
           {timePct !== null && (
             <Meter label="Timeline elapsed" pct={timePct} color={timePct > 90 ? "bg-red-500" : "bg-blue-500"} />
@@ -110,7 +110,7 @@ export function ProjectPipeline({
 
         {expert && (
           <div className="mt-4 flex items-center gap-3 rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800/50">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
               {expert.name.charAt(0).toUpperCase()}
             </span>
             <div>
@@ -156,8 +156,8 @@ export function ProjectPipeline({
 
         {(slackUrl || whatsappUrl) && (
           <div className="mt-4 flex gap-3 border-t pt-4">
-            {slackUrl && <a href={slackUrl} className="text-sm font-medium text-indigo-600 hover:underline">💬 Slack channel →</a>}
-            {whatsappUrl && <a href={whatsappUrl} className="text-sm font-medium text-indigo-600 hover:underline">📱 WhatsApp →</a>}
+            {slackUrl && <a href={slackUrl} className="text-sm font-medium text-brand-600 hover:underline">💬 Slack channel →</a>}
+            {whatsappUrl && <a href={whatsappUrl} className="text-sm font-medium text-brand-600 hover:underline">📱 WhatsApp →</a>}
           </div>
         )}
       </Card>
@@ -209,7 +209,7 @@ export function ProjectPipeline({
                   {r.kind && <span className="text-xs text-zinc-400">({r.kind})</span>}
                 </span>
                 {r.url && (
-                  <a href={r.url} target="_blank" rel="noreferrer" className="text-xs font-medium text-indigo-600 hover:underline">
+                  <a href={r.url} target="_blank" rel="noreferrer" className="text-xs font-medium text-brand-600 hover:underline">
                     Open →
                   </a>
                 )}

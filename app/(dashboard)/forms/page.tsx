@@ -15,7 +15,7 @@ export default async function FormsPage() {
   return (
     <div>
       <PageHeader title="Forms" subtitle="Build intake questionnaires clients fill out in their portal" />
-      <div className="grid gap-6 p-8 lg:grid-cols-2">
+      <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-2 lg:p-8">
         <div className="space-y-3">
           <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">Your forms</h2>
           {forms.length === 0 ? (

@@ -39,7 +39,7 @@ export default async function AutomationsPage() {
         title="Automations"
         subtitle="The lifecycle runs itself — these rules fire automatically"
       />
-      <div className="space-y-3 p-8">
+      <div className="space-y-3 p-4 sm:p-6 lg:p-8">
         {BUILT_IN.map((a) => (
           <Card key={a.trigger} className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">

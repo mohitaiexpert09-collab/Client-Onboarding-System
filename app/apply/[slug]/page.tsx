@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
+import { CheckCircle2 } from "lucide-react";
 import { Card, Button, Input, Label, Textarea } from "@/components/ui";
 import { submitLeadAction } from "./actions";
 import type { Organization } from "@/lib/types";
@@ -26,12 +27,12 @@ export default async function ApplyPage({
 
   if (sp.submitted) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-6 dark:bg-black">
-        <Card className="max-w-md text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full text-2xl" style={{ background: `${accent}22` }}>
-            🎉
+      <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 sm:px-6 dark:bg-zinc-950">
+        <Card className="max-w-md p-6 text-center sm:p-8">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full" style={{ background: `${accent}1f`, color: accent }}>
+            <CheckCircle2 className="h-6 w-6" />
           </div>
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Thank you!</h1>
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Thank you!</h1>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             {sp.proposal
               ? `We've emailed you a proposal from ${org.name}. Check your inbox to review and sign.`
@@ -43,7 +44,7 @@ export default async function ApplyPage({
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-zinc-50 px-6 py-12 dark:bg-black">
+    <div className="flex min-h-screen flex-col items-center bg-zinc-50 px-4 py-12 sm:px-6 dark:bg-zinc-950">
       <div className="w-full max-w-lg">
         <div className="mb-6 text-center">
           <p className="text-sm font-medium" style={{ color: accent }}>{org.name}</p>
@@ -61,7 +62,7 @@ export default async function ApplyPage({
               <Label htmlFor="name">Your name *</Label>
               <Input id="name" name="name" required placeholder="John Smith" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <Label htmlFor="email">Email *</Label>
                 <Input id="email" name="email" type="email" required placeholder="john@company.com" />
@@ -71,7 +72,7 @@ export default async function ApplyPage({
                 <Input id="company" name="company" placeholder="Acme Inc" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <Label htmlFor="phone">Phone</Label>
                 <Input id="phone" name="phone" placeholder="+1…" />

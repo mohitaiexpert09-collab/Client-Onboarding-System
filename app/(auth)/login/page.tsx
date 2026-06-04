@@ -47,7 +47,7 @@ export default async function LoginPage({
 
       <p className="text-center text-sm text-zinc-500">
         No account?{" "}
-        <Link href="/signup" className="font-medium text-indigo-600 hover:underline">
+        <Link href="/signup" className="font-medium text-brand-600 hover:underline">
           Create one
         </Link>
       </p>

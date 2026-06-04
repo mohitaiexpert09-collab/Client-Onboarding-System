@@ -96,7 +96,7 @@ export default async function AnalyticsPage() {
   return (
     <div>
       <PageHeader title="Analytics" subtitle="Revenue, pipeline conversion, and onboarding velocity" />
-      <div className="space-y-6 p-8">
+      <div className="space-y-6 p-4 sm:p-6 lg:p-8">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
           {stats.map((s) => (
             <Card key={s.label}>

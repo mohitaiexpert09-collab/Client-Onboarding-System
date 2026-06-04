@@ -56,7 +56,7 @@ export function AiPanel({
     return (
       <Card>
         <div className="mb-1 flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-indigo-500" />
+          <Sparkles className="h-4 w-4 text-brand-500" />
           <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">AI assists</h2>
         </div>
         <p className="text-sm text-zinc-500">
@@ -71,7 +71,7 @@ export function AiPanel({
   return (
     <Card>
       <div className="mb-3 flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-indigo-500" />
+        <Sparkles className="h-4 w-4 text-brand-500" />
         <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">AI assists</h2>
       </div>
 

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
-import { Card, Button, Input, Label, Badge } from "@/components/ui";
+import { Card, Button, Input, Label, Badge, Select, Textarea } from "@/components/ui";
 import {
   formatMoney,
   type Client,
@@ -110,15 +110,22 @@ export default async function PortalPage({
     : null;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      <header className="border-b border-zinc-200 bg-white px-6 py-5 dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="mx-auto max-w-2xl">
-          <p className="text-sm text-zinc-500">{org.name}</p>
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Welcome, {client.name} 👋</h1>
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <header className="border-b border-zinc-200/70 bg-white px-4 py-5 sm:px-6 dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="mx-auto flex max-w-2xl items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-base font-bold text-white shadow-sm">
+            {org.name.charAt(0).toUpperCase()}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm text-zinc-500">{org.name}</p>
+            <h1 className="truncate text-lg font-semibold tracking-tight text-zinc-900 sm:text-xl dark:text-zinc-100">
+              Welcome, {client.name}
+            </h1>
+          </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-2xl space-y-5 px-6 py-8">
+      <div className="mx-auto max-w-2xl space-y-5 px-4 py-8 sm:px-6">
         {banner && (
           <div className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700 dark:bg-green-900/30 dark:text-green-300">{banner}</div>
         )}
@@ -137,18 +144,18 @@ export default async function PortalPage({
               </div>
             )}
             <div className="mb-3">
-              <a href={`/portal/${token}/document/${pendingContract.id}`} target="_blank" rel="noreferrer" className="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">
+              <a href={`/portal/${token}/document/${pendingContract.id}`} target="_blank" rel="noreferrer" className="text-sm font-medium text-brand-600 hover:underline dark:text-brand-400">
                 View &amp; download full document (PDF) →
               </a>
             </div>
-            <form action={signContractAction} className="flex items-end gap-2">
+            <form action={signContractAction} className="flex flex-col gap-2 sm:flex-row sm:items-end">
               <input type="hidden" name="token" value={token} />
               <input type="hidden" name="contract_id" value={pendingContract.id} />
               <div className="flex-1">
                 <Label htmlFor="signer">Type your full name to sign</Label>
                 <Input id="signer" name="signer_name" required placeholder="Your full name" />
               </div>
-              <Button type="submit">Sign</Button>
+              <Button type="submit" className="w-full sm:w-auto">Sign</Button>
             </form>
           </Card>
         )}
@@ -169,7 +176,7 @@ export default async function PortalPage({
               {unpaidInvoice.description} — <span className="font-medium text-zinc-800 dark:text-zinc-200">{formatMoney(unpaidInvoice.amount_cents, unpaidInvoice.currency)}</span>
             </p>
             <div className="mb-3">
-              <a href={`/portal/${token}/invoice/${unpaidInvoice.id}`} target="_blank" rel="noreferrer" className="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">
+              <a href={`/portal/${token}/invoice/${unpaidInvoice.id}`} target="_blank" rel="noreferrer" className="text-sm font-medium text-brand-600 hover:underline dark:text-brand-400">
                 View &amp; download invoice (PDF) →
               </a>
             </div>
@@ -193,13 +200,7 @@ export default async function PortalPage({
                 <div key={f.key}>
                   <Label htmlFor={f.key}>{f.label}{f.required ? " *" : ""}</Label>
                   {f.type === "textarea" ? (
-                    <textarea
-                      id={f.key}
-                      name={f.key}
-                      required={f.required}
-                      rows={3}
-                      className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900"
-                    />
+                    <Textarea id={f.key} name={f.key} required={f.required} rows={3} />
                   ) : (
                     <Input id={f.key} name={f.key} type={f.type === "email" ? "email" : f.type === "url" ? "url" : "text"} required={f.required} />
                   )}
@@ -214,16 +215,18 @@ export default async function PortalPage({
         <Card>
           <h2 className="mb-1 font-semibold text-zinc-900 dark:text-zinc-100">4 · Share files &amp; access</h2>
           <p className="mb-3 text-sm text-zinc-500">Upload brand assets or securely share access details.</p>
-          <form action={uploadFileAction} className="flex items-end gap-2">
+          <form action={uploadFileAction} className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <input type="hidden" name="token" value={token} />
-            <div className="flex-1">
-              <input type="file" name="file" required className="block w-full text-sm text-zinc-600 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-indigo-700" />
+            <div className="min-w-0 flex-1">
+              <input type="file" name="file" required className="block w-full cursor-pointer rounded-lg border border-zinc-200 text-sm text-zinc-600 file:mr-3 file:cursor-pointer file:border-0 file:bg-brand-50 file:px-3 file:py-2 file:font-medium file:text-brand-700 hover:file:bg-brand-100 dark:border-zinc-700 dark:text-zinc-300 dark:file:bg-brand-900/30 dark:file:text-brand-300" />
             </div>
-            <select name="kind" defaultValue="asset" className="h-10 rounded-lg border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-900">
-              <option value="asset">Asset</option>
-              <option value="credential">Credential</option>
-            </select>
-            <Button type="submit">Upload</Button>
+            <div className="flex gap-2">
+              <Select name="kind" defaultValue="asset" className="h-10 w-auto">
+                <option value="asset">Asset</option>
+                <option value="credential">Credential</option>
+              </Select>
+              <Button type="submit" className="flex-1 sm:flex-none">Upload</Button>
+            </div>
           </form>
         </Card>
 
@@ -233,13 +236,13 @@ export default async function PortalPage({
           {kickoff?.status === "booked" ? (
             <p className="text-sm text-green-600">Booked for {new Date(kickoff.scheduled_at!).toLocaleString()}</p>
           ) : (
-            <form action={bookKickoffAction} className="flex items-end gap-2">
+            <form action={bookKickoffAction} className="flex flex-col gap-2 sm:flex-row sm:items-end">
               <input type="hidden" name="token" value={token} />
               <div className="flex-1">
                 <Label htmlFor="ko">Pick a time</Label>
                 <Input id="ko" name="scheduled_at" type="datetime-local" required />
               </div>
-              <Button type="submit">Book</Button>
+              <Button type="submit" className="w-full sm:w-auto">Book</Button>
             </form>
           )}
         </Card>

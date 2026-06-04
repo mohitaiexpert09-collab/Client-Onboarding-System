@@ -12,7 +12,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const INDIGO = "#4f46e5";
+const INDIGO = "#7c3aed";
 const GRID = "#e4e4e7";
 
 const axis = { tickLine: false, axisLine: false, fontSize: 12, stroke: "#a1a1aa" };
@@ -26,7 +26,7 @@ export function RevenueChart({ data }: { data: { month: string; revenue: number 
         <XAxis dataKey="month" {...axis} />
         <YAxis {...axis} tickFormatter={(v: number) => `$${v.toLocaleString()}`} width={70} />
         <Tooltip
-          cursor={{ fill: "rgba(79,70,229,0.06)" }}
+          cursor={{ fill: "rgba(124,58,237,0.06)" }}
           formatter={(value) => [`$${Number(value).toLocaleString()}`, "Revenue"]}
         />
         <Bar dataKey="revenue" fill={INDIGO} radius={[4, 4, 0, 0]} maxBarSize={48} />
@@ -64,7 +64,7 @@ export function FunnelChart({ data }: { data: { stage: string; count: number }[]
         <CartesianGrid strokeDasharray="3 3" stroke={GRID} horizontal={false} />
         <XAxis type="number" {...axis} allowDecimals={false} />
         <YAxis type="category" dataKey="stage" {...axis} width={96} />
-        <Tooltip cursor={{ fill: "rgba(79,70,229,0.06)" }} formatter={(value) => [value, "Clients reached"]} />
+        <Tooltip cursor={{ fill: "rgba(124,58,237,0.06)" }} formatter={(value) => [value, "Clients reached"]} />
         <Bar dataKey="count" fill={INDIGO} radius={[0, 4, 4, 0]} maxBarSize={18} />
       </BarChart>
     </ResponsiveContainer>

@@ -36,28 +36,29 @@ export default async function ContractsPage() {
   return (
     <div>
       <PageHeader title="Contracts" subtitle="All agreements and reusable templates" />
-      <div className="grid gap-6 p-8 lg:grid-cols-3">
+      <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-3 lg:p-8">
         <div className="space-y-3 lg:col-span-2">
           <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">All contracts</h2>
           {rows.length === 0 ? (
             <Card><p className="text-sm text-zinc-500">No contracts yet. Draft one from a client&apos;s page.</p></Card>
           ) : (
             <Card className="p-0">
-              <table className="w-full text-sm">
-                <thead className="border-b border-zinc-200 text-left text-xs uppercase text-zinc-500 dark:border-zinc-800">
+              {/* Desktop: table */}
+              <table className="hidden w-full text-sm sm:table">
+                <thead className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500 dark:border-zinc-800">
                   <tr>
-                    <th className="px-4 py-3">Title</th>
-                    <th className="px-4 py-3">Client</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Created</th>
+                    <th className="px-4 py-3 font-medium">Title</th>
+                    <th className="px-4 py-3 font-medium">Client</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Created</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
                   {rows.map((c) => (
-                    <tr key={c.id}>
+                    <tr key={c.id} className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/40">
                       <td className="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">{c.title}</td>
                       <td className="px-4 py-3">
-                        <Link href={`/clients/${c.client_id}`} className="text-indigo-600 hover:underline">
+                        <Link href={`/clients/${c.client_id}`} className="text-brand-600 hover:underline dark:text-brand-400">
                           {c.clients?.name ?? "—"}
                         </Link>
                       </td>
@@ -67,6 +68,22 @@ export default async function ContractsPage() {
                   ))}
                 </tbody>
               </table>
+
+              {/* Mobile: stacked cards */}
+              <ul className="divide-y divide-zinc-100 sm:hidden dark:divide-zinc-800">
+                {rows.map((c) => (
+                  <li key={c.id} className="flex items-start justify-between gap-3 p-4">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-zinc-800 dark:text-zinc-200">{c.title}</p>
+                      <Link href={`/clients/${c.client_id}`} className="text-sm text-brand-600 hover:underline dark:text-brand-400">
+                        {c.clients?.name ?? "—"}
+                      </Link>
+                      <p className="mt-0.5 text-xs text-zinc-400">{new Date(c.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <Badge color={statusColor(c.status)}>{c.status}</Badge>
+                  </li>
+                ))}
+              </ul>
             </Card>
           )}
         </div>
