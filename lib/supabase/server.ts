@@ -1,14 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { publicEnv, serverEnv } from "@/lib/env";
 
 /**
  * Supabase client for Server Components, Server Actions, and Route Handlers.
  * Backed by the request cookies so the authenticated user's session is used and
  * RLS policies apply. `cookies()` is async in Next.js 16.
+ *
+ * Wrapped in React `cache()` so a single client (and one `cookies()` read) is
+ * reused across every helper within the same request.
  */
-export async function createClient() {
+export const createClient = cache(async () => {
   const cookieStore = await cookies();
 
   return createServerClient(publicEnv.supabaseUrl, publicEnv.supabaseAnonKey, {
@@ -28,7 +32,7 @@ export async function createClient() {
       },
     },
   });
-}
+});
 
 /**
  * Privileged client using the service role key. BYPASSES Row Level Security —

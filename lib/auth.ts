@@ -1,19 +1,25 @@
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Organization, Role } from "@/lib/types";
 
 /**
  * Auth + multi-tenancy helpers. Single place to resolve the current user and
  * their active org so all data access is tenant-scoped.
+ *
+ * `getCurrentUser` and `getContext` are wrapped in React `cache()` so that even
+ * if multiple server components / helpers call them during one request, the
+ * underlying Supabase round-trips happen only once. This removes the redundant
+ * `getUser()` calls that previously made every navigation slow.
  */
 
-export async function getCurrentUser() {
+export const getCurrentUser = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   return user;
-}
+});
 
 export interface CurrentContext {
   userId: string;
@@ -24,15 +30,14 @@ export interface CurrentContext {
 
 /**
  * Resolves the signed-in user, their first org membership, and role.
- * Returns null if not authenticated or not yet in an org.
+ * Returns null if not authenticated or not yet in an org. Deduplicated per
+ * request so repeated calls cost nothing.
  */
-export async function getContext(): Promise<CurrentContext | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export const getContext = cache(async (): Promise<CurrentContext | null> => {
+  const user = await getCurrentUser();
   if (!user) return null;
 
+  const supabase = await createClient();
   const { data: membership } = await supabase
     .from("memberships")
     .select("role, org_id, organizations(*)")
@@ -49,17 +54,17 @@ export async function getContext(): Promise<CurrentContext | null> {
     org: membership.organizations as unknown as Organization,
     role: membership.role as Role,
   };
-}
+});
 
 /**
  * For server components/actions in the dashboard: returns the context or
  * redirects. Sends authenticated-but-org-less users to onboarding.
+ *
+ * Reuses the cached `getCurrentUser`/`getContext` so this performs a single
+ * `getUser()` + a single membership query per request — not three.
  */
 export async function requireContext(): Promise<CurrentContext> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   const ctx = await getContext();
